@@ -1,0 +1,112 @@
+package com.nevc.api.video_streaming.controllers;
+
+import com.nevc.api.video_streaming.auth.AuthRequest;
+import com.nevc.api.video_streaming.auth.AuthResponse;
+import com.nevc.api.video_streaming.auth.JwtUtil;
+import com.nevc.api.video_streaming.entities.User;
+import com.nevc.api.video_streaming.enums.Role;
+import com.nevc.api.video_streaming.services.UserDetailsServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+@CrossOrigin(
+        origins = {
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:8080"
+        },
+        methods = {
+                RequestMethod.OPTIONS,
+                RequestMethod.GET,
+                RequestMethod.PUT,
+                RequestMethod.DELETE,
+                RequestMethod.POST
+        })
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/auth")
+public class AuthController {
+
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+
+    private final Set<String> invalidatedTokens = new HashSet<>();
+
+    @PostMapping("/login")
+    @Operation(summary = "Login a video streaming user")
+    @ApiResponse(responseCode = "200", description = "If user is found and token is generated.")
+    @ApiResponse(responseCode = "400", description = "In case of a bad request.")
+    @ApiResponse(responseCode = "404", description = "In case the user by email is not found.")
+    public ResponseEntity<?> login(@RequestBody @Valid AuthRequest authRequest) {
+        log.debug("Authenticating user with email: {}", authRequest.getEmail());
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        Optional<User> userOptional = userDetailsService.findByEmail(authRequest.getEmail());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userOptional.get();
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                .password(user.getPassword())
+                .authorities(String.valueOf(user.getRole()))
+                .build();
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Register a video streaming user")
+    @ApiResponse(responseCode = "200", description = "If user is correctly registered.")
+    @ApiResponse(responseCode = "400", description = "In case of a bad request or user already exists.")
+    public ResponseEntity<?> register(@RequestBody @Valid AuthRequest authRequest) {
+        log.debug("Registering user with email: {}", authRequest.getEmail());
+        if (userDetailsService.findByEmail(authRequest.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email is already in use");
+        }
+
+        User newUser = new User();
+        newUser.setEmail(authRequest.getEmail());
+        newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+        newUser.setRole(Role.CREATOR);
+        newUser = userDetailsService.saveUser(newUser);
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(newUser.getEmail())
+                .password(newUser.getPassword())
+                .authorities(String.valueOf(newUser.getRole()))
+                .build();
+        String token = jwtUtil.generateToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logging out a video streaming user by auth token")
+    @ApiResponse(responseCode = "200", description = "If user is correctly logged out.")
+    @ApiResponse(responseCode = "400", description = "In case of a bad request or user already exists.")
+    public ResponseEntity<?> logout(@RequestBody @Valid AuthResponse authResponse) {
+        log.debug("Invalidating token: {}", authResponse.getToken());
+        invalidatedTokens.add(authResponse.getToken());
+        return ResponseEntity.ok("User logged out successfully");
+    }
+}
