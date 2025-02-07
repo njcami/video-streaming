@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class JwtUtil {
@@ -18,6 +20,8 @@ public class JwtUtil {
     private String secret;
 
     private Key key;
+
+    private final Set<String> invalidatedTokens = new HashSet<>();
 
     @PostConstruct
     public void init() {
@@ -39,7 +43,21 @@ public class JwtUtil {
         return Jwts.parser().setSigningKey(secret.getBytes()).build().parseClaimsJws(token).getBody().getSubject();
     }
 
+    public void invalidateToken(String token) {
+        invalidatedTokens.add(token);
+    }
+
+    public boolean isTokenInvalid(String token) {
+        return invalidatedTokens.contains(token);
+    }
+
+    public boolean isTokenExpired(String token) {
+        return Jwts.parser().setSigningKey(secret.getBytes()).build().parseClaimsJws(token)
+                .getBody().getExpiration().before(new Date());
+    }
+
     public boolean validateToken(String token, UserDetails userDetails) {
-        return extractUsername(token).equals(userDetails.getUsername());
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenInvalid(token) && !isTokenExpired(token));
     }
 }

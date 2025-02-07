@@ -23,9 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 @CrossOrigin(
         origins = {
@@ -50,8 +48,6 @@ public class AuthController {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-
-    private final Set<String> invalidatedTokens = new HashSet<>();
 
     @PostMapping("/login")
     @Operation(summary = "Login a video streaming user")
@@ -103,10 +99,10 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logging out a video streaming user by auth token")
     @ApiResponse(responseCode = "200", description = "If user is correctly logged out.")
-    @ApiResponse(responseCode = "400", description = "In case of a bad request or user already exists.")
+    @ApiResponse(responseCode = "400", description = "In case of a bad request.")
     public ResponseEntity<?> logout(@RequestBody @Valid AuthResponse authResponse) {
         log.debug("Invalidating token: {}", authResponse.getToken());
-        invalidatedTokens.add(authResponse.getToken());
+        jwtUtil.invalidateToken(authResponse.getToken());
         return ResponseEntity.ok("User logged out successfully");
     }
 }
