@@ -14,7 +14,7 @@ curl -X POST "http://localhost:8080/auth/register" \
          }'
 ```
 
-## Login with the New User
+## Login to Get JWT Bearer Token
 ```sh
 curl -X POST "http://localhost:8080/auth/login" \
      -H "Content-Type: application/json" \
@@ -24,7 +24,7 @@ curl -X POST "http://localhost:8080/auth/login" \
          }'
 ```
 
-## Logout
+## Logout with JWT Bearer Token
 ```sh
 curl -X POST "http://localhost:8080/auth/logout" \
      -H "Content-Type: application/json" \
