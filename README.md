@@ -33,10 +33,10 @@ curl -X POST "http://localhost:8080/auth/logout" \
          }'
 ```
 
-Once registered and logged in, the users can:
+Once registered (user is given ADMIN role for simplicity to try all endpoints) and logged in, the users can:
 
 - **Users with Role VIEWER**: Can perform GET operations on videos endpoints.
-- **Users with Role UPLOADER**: Can perform POST and PUT operations on videos endpoints.
+- **Users with Role CREATOR**: Can perform POST and PUT operations on videos endpoints.
 - **Users with Role ADMIN**: Can perform DELETE operations on the videos endpoint.
 
 ## VideoController Endpoints

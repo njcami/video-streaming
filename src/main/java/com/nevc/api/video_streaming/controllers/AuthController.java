@@ -90,7 +90,7 @@ public class AuthController {
         User newUser = new User();
         newUser.setEmail(authRequest.getEmail());
         newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
-        newUser.setRole(Role.CREATOR);
+        newUser.setRole(Role.ADMIN);
         newUser = userDetailsService.saveUser(newUser);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(newUser.getEmail())
