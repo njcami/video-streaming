@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Profile;
         servers = {
                 @Server(
                         url = "http://localhost:8080",
-                        description = "Secure server"
+                        description = "Secure Video Streaming Server"
                 )
         }
 )

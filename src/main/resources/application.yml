@@ -22,4 +22,7 @@ spring:
     level:
       root: INFO
       org.springframework.web: DEBUG
-      com.eeze: DEBUG
+      com.nevc: DEBUG
+
+video:
+  filepath: "uploads/"

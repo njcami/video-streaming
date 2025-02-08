@@ -16,12 +16,12 @@ import java.util.Set;
 @Component
 public class JwtUtil {
 
+    private final Set<String> invalidatedTokens = new HashSet<>();
+
     @Value("${jwt.secret}")
     private String secret;
 
     private Key key;
-
-    private final Set<String> invalidatedTokens = new HashSet<>();
 
     @PostConstruct
     public void init() {

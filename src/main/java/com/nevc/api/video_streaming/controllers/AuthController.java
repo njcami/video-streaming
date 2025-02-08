@@ -5,12 +5,13 @@ import com.nevc.api.video_streaming.auth.AuthResponse;
 import com.nevc.api.video_streaming.auth.JwtUtil;
 import com.nevc.api.video_streaming.entities.User;
 import com.nevc.api.video_streaming.enums.Role;
-import com.nevc.api.video_streaming.services.UserDetailsServiceImpl;
+import com.nevc.api.video_streaming.services.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,21 +46,27 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     @Operation(summary = "Login a video streaming user")
     @ApiResponse(responseCode = "200", description = "If user is found and token is generated.")
-    @ApiResponse(responseCode = "400", description = "In case of a bad request.")
+    @ApiResponse(responseCode = "400", description = "In case of a bad login request.")
     @ApiResponse(responseCode = "404", description = "In case the user by email is not found.")
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest authRequest) {
         log.debug("Authenticating user with email: {}", authRequest.getEmail());
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        } catch (Exception e) {
+            log.info("Invalid credentials for user with email: {}", authRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
         Optional<User> userOptional = userDetailsService.findByEmail(authRequest.getEmail());
         if (userOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         User user = userOptional.get();
         UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())

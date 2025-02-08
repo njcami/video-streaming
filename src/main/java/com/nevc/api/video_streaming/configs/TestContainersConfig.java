@@ -16,9 +16,9 @@ public class TestContainersConfig {
     @Bean
     public MySQLContainer<?> mysqlContainer() {
         MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("video_streaming")
-            .withUsername("app_user")
-            .withPassword("app_password");
+                .withDatabaseName("video_streaming")
+                .withUsername("app_user")
+                .withPassword("app_password");
         mysqlContainer.start();
         System.setProperty("DB_URL", mysqlContainer.getJdbcUrl());
         System.setProperty("DB_USERNAME", mysqlContainer.getUsername());

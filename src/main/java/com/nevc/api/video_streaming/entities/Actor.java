@@ -1,14 +1,12 @@
 package com.nevc.api.video_streaming.entities;
 
-import com.nevc.api.video_streaming.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,6 +17,7 @@ import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,26 +26,20 @@ import java.io.Serializable;
 @ToString
 @EqualsAndHashCode
 @Entity
-@Table(name = "users")
-public class User implements Serializable {
+@Table(name = "actors")
+public class Actor implements Serializable {
 
     @Serial
-    private static final long serialVersionUID = 123L;
+    private static final long serialVersionUID = 124523L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String name;
+    @Schema(description = "Full name of the actor", example = "Christian Bale")
+    @Column(name = "name", nullable = false)
+    private String fullName;
 
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Schema(description = "Role of the user", example = "ADMIN, CREATOR, VIEWER")
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @ManyToMany(mappedBy = "cast")
+    private Set<VideoMetaData> videos;
 }
