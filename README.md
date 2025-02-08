@@ -44,6 +44,7 @@ Once registered and logged in, the users can:
 ### Publish a Video
 ```sh
 curl -X POST "http://localhost:8080/videos" \
+     -H "Authorization: Bearer your-jwt-token-here" \
      -H "Content-Type: multipart/form-data" \
      -F "file=@/path/to/video.mp4" \
      -F 'videoMetaDataDTO={ "title": "Sample Video", "synopsis": "A sample video synopsis", "directorName": "Director Name", "mainActor": "Main Actor", "cast": ["Actor 1", "Actor 2"], "yearOfRelease": 2022, "genre": ["ACTION"], "runningTime": 120 }'
@@ -52,61 +53,73 @@ curl -X POST "http://localhost:8080/videos" \
 ### Update Video Metadata
 ```sh
 curl -X PUT "http://localhost:8080/videos/1" \
+     -H "Authorization: Bearer your-jwt-token-here" \
      -H "Content-Type: application/json" \
      -d '{ "title": "Updated Title", "synopsis": "Updated synopsis", "directorName": "Updated Director", "mainActor": "Updated Main Actor", "cast": ["Actor 1", "Actor 2"], "yearOfRelease": 2022, "genre": ["DRAMA"], "runningTime": 130 }'
 ```
 
 ### Play Video
 ```sh
-curl -X GET "http://localhost:8080/videos/play/1"
+curl -X GET "http://localhost:8080/videos/play/1" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Get Video Metadata
 ```sh
-curl -X GET "http://localhost:8080/videos/1"
+curl -X GET "http://localhost:8080/videos/1" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Delete Video
 ```sh
-curl -X DELETE "http://localhost:8080/videos/1"
+curl -X DELETE "http://localhost:8080/videos/1" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Find All Videos
 ```sh
-curl -X GET "http://localhost:8080/videos"
+curl -X GET "http://localhost:8080/videos" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Find All Video Impressions
 ```sh
-curl -X GET "http://localhost:8080/videos/1/impressions"
+curl -X GET "http://localhost:8080/videos/1/impressions" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Find All Video Views
 ```sh
-curl -X GET "http://localhost:8080/videos/1/views"
+curl -X GET "http://localhost:8080/videos/1/views" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Search Videos by Title
 ```sh
-curl -X GET "http://localhost:8080/videos/search/title?title=Sample Title"
+curl -X GET "http://localhost:8080/videos/search/title?title=Sample Title" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Search Videos by Director
 ```sh
-curl -X GET "http://localhost:8080/videos/search/director?director=Sample Director"
+curl -X GET "http://localhost:8080/videos/search/director?director=Sample Director" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Search Videos by Main Actor
 ```sh
-curl -X GET "http://localhost:8080/videos/search/mainActor?mainActor=Sample Actor"
+curl -X GET "http://localhost:8080/videos/search/mainActor?mainActor=Sample Actor" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Search Videos by Running Time
 ```sh
-curl -X GET "http://localhost:8080/videos/search/runningTime?runningTime=120&comparator=GREATER_OR_EQUAL"
+curl -X GET "http://localhost:8080/videos/search/runningTime?runningTime=120&comparator=GREATER_OR_EQUAL" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
 
 ### Search Videos by Genre
 ```sh
-curl -X GET "http://localhost:8080/videos/search/genre?genre=ACTION"
+curl -X GET "http://localhost:8080/videos/search/genre?genre=ACTION" \
+     -H "Authorization: Bearer your-jwt-token-here"
 ```
