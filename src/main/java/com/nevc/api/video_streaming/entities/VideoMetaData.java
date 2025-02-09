@@ -14,9 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,6 +52,7 @@ public class VideoMetaData implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotEmpty
     @Schema(description = "Title of the video", example = "The Dark Knight")
     @Column(name = "title", nullable = false)
     private String title;
@@ -58,10 +61,12 @@ public class VideoMetaData implements Serializable {
     @Column(name = "synopsis", length = 3000)
     private String synopsis;
 
+    @NotEmpty
     @Schema(description = "Director of the video", example = "Christopher Nolan")
     @Column(name = "director", nullable = false)
     private String directorName;
 
+    @NotEmpty
     @Schema(description = "Main Actor of the video", example = "Christian Bale")
     @Column(name = "main_actor", nullable = false)
     private String mainActor;
@@ -73,15 +78,16 @@ public class VideoMetaData implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "actor_id")
     )
     @Builder.Default
-    @Schema(description = "Cast of the video", example = "[\"Christian Bale\", \"Heath Ledger\"]")
+    @Schema(description = "Cast of the video")
     private Set<Actor> cast = new HashSet<>();
 
     @Min(1900)
-    @Max(2030)
+    @Max(2050)
     @Schema(description = "Year of release of the video", example = "2008")
     @Column(name = "year_of_release", nullable = false)
     private int yearOfRelease;
 
+    @NotNull
     @Schema(description = "Publish date of the video", example = "2024-12-31")
     @Column(name = "published_date", nullable = false)
     private LocalDate publishedDate;
@@ -94,16 +100,20 @@ public class VideoMetaData implements Serializable {
     @Column(name = "deleted_date")
     private LocalDate deletedDate;
 
+    @NotNull
+    @ManyToOne(optional = false)
     @Schema(description = "User who published the video")
-    @Column(name = "published_by", nullable = false)
+    @JoinColumn(name = "published_by", nullable = false)
     private User publishedBy;
 
+    @ManyToOne
     @Schema(description = "User who last updated the video")
-    @Column(name = "last_updated_by")
+    @JoinColumn(name = "last_updated_by")
     private User lastUpdatedBy;
 
+    @ManyToOne
     @Schema(description = "User who deleted the video")
-    @Column(name = "deleted_by")
+    @JoinColumn(name = "deleted_by")
     private User deletedBy;
 
     @NotNull
@@ -136,6 +146,7 @@ public class VideoMetaData implements Serializable {
     private String fileExtension;
 
     @Schema(description = "Active status of the video, (soft-deleted if false)", example = "true")
+    @Builder.Default
     @Column(name = "active")
-    private boolean active;
+    private boolean active = true;
 }

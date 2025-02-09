@@ -45,13 +45,15 @@ token to be in place.
 
 ## VideoController Endpoints
 
-### Publish a Video
+### Publish a Video (MP4 file)
 ```sh
 curl -X POST "http://localhost:8080/videos" \
+     -H 'accept: */*' \
      -H "Authorization: Bearer your-jwt-token-here" \
      -H "Content-Type: multipart/form-data" \
-     -F "file=@/path/to/video.mp4" \
-     -F 'videoMetaDataDTO={ "title": "Sample Video", "synopsis": "A sample video synopsis", "directorName": "Director Name", "mainActor": "Main Actor", "cast": ["Actor 1", "Actor 2"], "yearOfRelease": 2022, "genre": ["ACTION"], "runningTime": 120 }'
+     -F "file=@/path/to/video.mp4;type=video/mp4" \
+     -F 'videoMetaDataDTO={"title": "Sample Video", "synopsis": "A sample video synopsis", "directorName": "Director Name", "mainActor": "Main Actor", "cast": [], "yearOfRelease": 2022, "genre": ["ACTION"], "runningTime": 120, "fileExtension": "mp4", "fileName": "video.mp4"}' \
+     -F 'videoMetaDataDTO=@metadata.json;type=application/json'     `
 ```
 
 ### Update Video Metadata
@@ -59,7 +61,7 @@ curl -X POST "http://localhost:8080/videos" \
 curl -X PUT "http://localhost:8080/videos/1" \
      -H "Authorization: Bearer your-jwt-token-here" \
      -H "Content-Type: application/json" \
-     -d '{ "title": "Updated Title", "synopsis": "Updated synopsis", "directorName": "Updated Director", "mainActor": "Updated Main Actor", "cast": ["Actor 1", "Actor 2"], "yearOfRelease": 2022, "genre": ["DRAMA"], "runningTime": 130 }'
+     -d '{ "title": "Updated Title", "synopsis": "Updated synopsis", "directorName": "Updated Director", "mainActor": "Updated Main Actor", "cast": [], "yearOfRelease": 2022, "genre": ["DRAMA"], "runningTime": 130, "fileExtension": "mp4", "fileName": "video.mp4" }'
 ```
 
 ### Play Video

@@ -4,6 +4,7 @@ import com.nevc.api.video_streaming.entities.Actor;
 import com.nevc.api.video_streaming.enums.Genre;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,26 +33,27 @@ public class VideoMetaDataDTO implements Serializable {
 
     private Long id;
 
-    @NotNull
+    @NotEmpty
     @Schema(description = "Title of the video", example = "The Dark Knight")
     private String title;
 
     @Schema(description = "Synopsis of the video", example = "The Dark Knight is a 2008 superhero film directed by Christopher Nolan.")
     private String synopsis;
 
-    @NotNull
+    @NotEmpty
     @Schema(description = "Director of the video", example = "Christopher Nolan")
     private String directorName;
 
-    @NotNull
+    @NotEmpty
     @Schema(description = "Main Actor of the video", example = "Christian Bale")
     private String mainActor;
 
     @Builder.Default
-    @Schema(description = "Cast of the video", example = "[\"Christian Bale\", \"Heath Ledger\"]")
+    @Schema(description = "Cast of the video")
     private Set<Actor> cast = new HashSet<>();
 
-    @Schema(description = "Year of release of the video", example = "2008-07-18")
+    @NotNull
+    @Schema(description = "Year of release of the video", example = "2008")
     private int yearOfRelease;
 
     @Builder.Default
@@ -62,12 +64,12 @@ public class VideoMetaDataDTO implements Serializable {
     @Schema(description = "Running time of the video in minutes", example = "152")
     private int runningTime;
 
-    @NotNull
+    @NotEmpty
     @Schema(description = "File name of the video", example = "the_dark_knight.mp4")
     @Column(name = "file_name")
     private String fileName;
 
-    @NotNull
+    @NotEmpty
     @Schema(description = "File extension of the video", example = "mp4")
     @Column(name = "file_extension")
     private String fileExtension;

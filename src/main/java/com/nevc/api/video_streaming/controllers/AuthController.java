@@ -1,5 +1,6 @@
 package com.nevc.api.video_streaming.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nevc.api.video_streaming.auth.AuthRequest;
 import com.nevc.api.video_streaming.auth.AuthResponse;
 import com.nevc.api.video_streaming.auth.JwtUtil;
@@ -55,6 +56,7 @@ public class AuthController {
     private final UserServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
 
     @Value("${registration.default.role:ADMIN}")
     private Role defaultRole;

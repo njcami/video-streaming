@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,6 @@ public class VideoServiceImpl implements VideoService {
     private final VideoMetaDataRepository videoMetaDataRepository;
     private final VideoImpressionRepository videoImpressionRepository;
     private final VideoViewRepository videoViewRepository;
-    private final Environment env;
 
     @Value("${video.publishPath}")
     private String publishPath;
@@ -112,9 +110,9 @@ public class VideoServiceImpl implements VideoService {
         VideoMetaData video = VideoMetaData.builder()
                 .title(videoMetaData.getTitle())
                 .synopsis(videoMetaData.getSynopsis())
-                .publishedDate(LocalDate.now())
                 .cast(videoMetaData.getCast())
                 .directorName(videoMetaData.getDirectorName())
+                .mainActor(videoMetaData.getMainActor())
                 .genre(videoMetaData.getGenre())
                 .fileSize(file.getSize())
                 .yearOfRelease(videoMetaData.getYearOfRelease())
@@ -122,6 +120,7 @@ public class VideoServiceImpl implements VideoService {
                 .fileExtension(file.getContentType())
                 .fileName(fileName)
                 .runningTime(videoMetaData.getRunningTime())
+                .publishedDate(LocalDate.now())
                 .publishedBy(user)
                 .active(true)
                 .build();

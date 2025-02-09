@@ -16,6 +16,7 @@ public class VideoMetaDataMapper {
                 .genre(videoMetaDataDto.getGenre())
                 .cast(videoMetaDataDto.getCast())
                 .directorName(videoMetaDataDto.getDirectorName())
+                .mainActor(videoMetaDataDto.getMainActor())
                 .runningTime(videoMetaDataDto.getRunningTime())
                 .build();
     }
@@ -31,6 +32,7 @@ public class VideoMetaDataMapper {
                 .genre(videoMetaData.getGenre())
                 .cast(videoMetaData.getCast())
                 .directorName(videoMetaData.getDirectorName())
+                .mainActor(videoMetaData.getMainActor())
                 .runningTime(videoMetaData.getRunningTime())
                 .build();
     }

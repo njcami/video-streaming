@@ -1,6 +1,9 @@
 package com.nevc.api.video_streaming.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nevc.api.video_streaming.dto.VideoMetaDataDTO;
+import com.nevc.api.video_streaming.entities.Actor;
 import com.nevc.api.video_streaming.entities.User;
 import com.nevc.api.video_streaming.entities.VideoImpression;
 import com.nevc.api.video_streaming.entities.VideoView;
@@ -10,6 +13,11 @@ import com.nevc.api.video_streaming.projections.VideoMetaDataProjection;
 import com.nevc.api.video_streaming.services.UserService;
 import com.nevc.api.video_streaming.services.VideoService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Path;
+import jakarta.validation.Validator;
+import jakarta.validation.metadata.ConstraintDescriptor;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -18,14 +26,18 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class VideoControllerTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private VideoService videoService;
@@ -39,23 +51,112 @@ class VideoControllerTest {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private Validator validator;
+
     @InjectMocks
     private VideoController videoController;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        videoController = new VideoController(videoService, userService, new ObjectMapper(), validator);
     }
 
     @Test
-    void testPublishVideo_Success() {
+    void testPublishVideo_No_File() throws JsonProcessingException {
         User user = new User();
         user.setId(1L);
-        VideoMetaDataDTO videoMetaDataDTO = new VideoMetaDataDTO();
+        file = null;
+        VideoMetaDataDTO videoMetaDataDTO = VideoMetaDataDTO.builder()
+                .title("Test Title")
+                .directorName("Test Director")
+                .mainActor("Test Main Actor")
+                .runningTime(120)
+                .genre(Set.of(Genre.ACTION, Genre.THRILLER))
+                .fileName("test.mp4")
+                .fileExtension("mp4")
+                .yearOfRelease(2021)
+                .synopsis("Test Synopsis")
+                .cast(Set.of(new Actor(null, "Christian Bale", null),
+                        new Actor(null, "Heath Ledger", null)))
+
+                .build();
+        String videoMetaDataJson = objectMapper.writeValueAsString(videoMetaDataDTO);
+
         when(userService.getLoggedInUser()).thenReturn(user);
         when(videoService.publishVideo(user, file, videoMetaDataDTO)).thenReturn(videoMetaDataDTO);
 
-        ResponseEntity<?> response = videoController.publishVideo(file, videoMetaDataDTO);
+        ResponseEntity<?> response = videoController.publishVideo(file, videoMetaDataJson);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(videoService, times(0)).publishVideo(user, file, videoMetaDataDTO);
+    }
+
+    @Test
+    void testPublishVideo_New_Video_Metadata_Has_Id() throws JsonProcessingException {
+        User user = new User();
+        user.setId(1L);
+        file = new MockMultipartFile("test.mp4", "test.mp4", "video/mp4", new byte[0]);
+        VideoMetaDataDTO videoMetaDataDTO = VideoMetaDataDTO.builder()
+                .id(1L)
+                .build();
+        when(userService.getLoggedInUser()).thenReturn(user);
+        when(videoService.publishVideo(user, file, videoMetaDataDTO)).thenReturn(videoMetaDataDTO);
+
+        String videoMetaDataJson = objectMapper.writeValueAsString(videoMetaDataDTO);
+
+        ResponseEntity<?> response = videoController.publishVideo(file, videoMetaDataJson);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(videoService, times(0)).publishVideo(user, file, videoMetaDataDTO);
+    }
+
+    @Test
+    void testPublishVideo_New_Video_Metadata_Has_Missing_Data() throws JsonProcessingException {
+        User user = new User();
+        user.setId(1L);
+        file = new MockMultipartFile("test.mp4", "test.mp4", "video/mp4", new byte[0]);
+        VideoMetaDataDTO videoMetaDataDTO = VideoMetaDataDTO.builder()
+                .title("Test Title")
+                .build();
+        when(userService.getLoggedInUser()).thenReturn(user);
+        when(videoService.publishVideo(user, file, videoMetaDataDTO)).thenReturn(videoMetaDataDTO);
+        when(validator.validate(videoMetaDataDTO)).thenReturn(getValidationConstraintImplementation());
+
+        String videoMetaDataJson = objectMapper.writeValueAsString(videoMetaDataDTO);
+
+        ResponseEntity<?> response = videoController.publishVideo(file, videoMetaDataJson);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(videoService, times(0)).publishVideo(user, file, videoMetaDataDTO);
+    }
+
+    @Test
+    void testPublishVideo_Success() throws JsonProcessingException {
+        User user = new User();
+        user.setId(1L);
+        file = new MockMultipartFile("test.mp4", "test.mp4", "video/mp4", new byte[0]);
+        VideoMetaDataDTO videoMetaDataDTO = VideoMetaDataDTO.builder()
+                .title("Test Title")
+                .directorName("Test Director")
+                .mainActor("Test Main Actor")
+                .runningTime(120)
+                .genre(Set.of(Genre.ACTION, Genre.THRILLER))
+                .fileName("test.mp4")
+                .fileExtension("mp4")
+                .yearOfRelease(2021)
+                .synopsis("Test Synopsis")
+                .cast(Set.of(new Actor(null, "Christian Bale", null),
+                        new Actor(null, "Heath Ledger", null)))
+
+                .build();
+        when(userService.getLoggedInUser()).thenReturn(user);
+        when(videoService.publishVideo(user, file, videoMetaDataDTO)).thenReturn(videoMetaDataDTO);
+
+        String videoMetaDataJson = objectMapper.writeValueAsString(videoMetaDataDTO);
+
+        ResponseEntity<?> response = videoController.publishVideo(file, videoMetaDataJson);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(videoMetaDataDTO, response.getBody());
@@ -66,7 +167,7 @@ class VideoControllerTest {
     void testPublishVideo_Unauthorized() {
         when(userService.getLoggedInUser()).thenReturn(null);
 
-        ResponseEntity<?> response = videoController.publishVideo(file, new VideoMetaDataDTO());
+        ResponseEntity<?> response = videoController.publishVideo(file, "");
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
@@ -434,5 +535,64 @@ class VideoControllerTest {
         ResponseEntity<?> response = videoController.getByGenre(null);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    private static @NotNull Set getValidationConstraintImplementation() {
+        return Set.of(new ConstraintViolation() {
+            @Override
+            public String getMessage() {
+                return "DirectorName is required";
+            }
+
+            @Override
+            public String getMessageTemplate() {
+                return "";
+            }
+
+            @Override
+            public Object getRootBean() {
+                return null;
+            }
+
+            @Override
+            public Class getRootBeanClass() {
+                return null;
+            }
+
+            @Override
+            public Object getLeafBean() {
+                return null;
+            }
+
+            @Override
+            public Object[] getExecutableParameters() {
+                return new Object[0];
+            }
+
+            @Override
+            public Object getExecutableReturnValue() {
+                return null;
+            }
+
+            @Override
+            public Path getPropertyPath() {
+                return null;
+            }
+
+            @Override
+            public Object getInvalidValue() {
+                return null;
+            }
+
+            @Override
+            public ConstraintDescriptor<?> getConstraintDescriptor() {
+                return null;
+            }
+
+            @Override
+            public Object unwrap(Class aClass) {
+                return null;
+            }
+        });
     }
 }

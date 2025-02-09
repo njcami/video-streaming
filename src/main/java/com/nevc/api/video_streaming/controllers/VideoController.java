@@ -1,5 +1,7 @@
 package com.nevc.api.video_streaming.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.nevc.api.video_streaming.dto.VideoMetaDataDTO;
 import com.nevc.api.video_streaming.entities.User;
@@ -14,7 +16,12 @@ import com.nevc.api.video_streaming.services.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -28,11 +35,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Getter
+@Setter
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -40,23 +52,43 @@ import java.util.List;
 public class VideoController {
     private final VideoService videoService;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
+    private final Validator validator;
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     @Operation(summary = "Publish a new video from the user.")
     @ApiResponse(responseCode = "201", description = "Video publishing is successful.")
     @ApiResponse(responseCode = "400", description = "Request to publish video is not correct.")
     @ApiResponse(responseCode = "401", description = "User is not authenticated.")
     @ApiResponse(responseCode = "500", description = "An internal error has occurred while trying to publish the video.")
-    public ResponseEntity<?> publishVideo(@RequestParam("file") MultipartFile file,
-                                          @RequestBody VideoMetaDataDTO videoMetaDataDTO) {
+    public ResponseEntity<?> publishVideo(@RequestPart("file") MultipartFile file,
+                                          @RequestPart("videoMetaDataDTO") String videoMetaDataJson) {
         User user = userService.getLoggedInUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        if (file == null || videoMetaDataDTO == null) {
+        if (file == null || file.getOriginalFilename() == null || videoMetaDataJson == null || videoMetaDataJson.isEmpty()) {
             return ResponseEntity.badRequest().body("File and video metadata must be provided.");
         }
-        log.info("Uploading video by user with id: {}, video meta data: {}", user.getId(), videoMetaDataDTO);
+        VideoMetaDataDTO videoMetaDataDTO;
+        try {
+            videoMetaDataDTO = objectMapper.readValue(videoMetaDataJson, VideoMetaDataDTO.class);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.badRequest().body("Invalid video metadata format.");
+        }
+        if (videoMetaDataDTO.getId() != null && videoMetaDataDTO.getId() != 0) {
+            return ResponseEntity.badRequest().body("New video cannot have an id.");
+        }
+        // Validate the videoMetaDataDTO manually
+        Set<ConstraintViolation<VideoMetaDataDTO>> violations = validator.validate(videoMetaDataDTO);
+        if (!violations.isEmpty()) {
+            String errorMessages = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body("Validation failed: " + errorMessages);
+        }
+        log.info("Publishing video by user with id: {}, video meta data: {}, filename:{}", user.getId(),
+                videoMetaDataDTO, file.getOriginalFilename());
         try {
             VideoMetaDataDTO videoMetaData = videoService.publishVideo(user, file, videoMetaDataDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(videoMetaData);
@@ -76,13 +108,16 @@ public class VideoController {
     @ApiResponse(responseCode = "401", description = "User is not authenticated.")
     @ApiResponse(responseCode = "404", description = "User or video not found.")
     @ApiResponse(responseCode = "500", description = "An internal error has occurred while trying to update the video meta data.")
-    public ResponseEntity<?> updateVideoMetaData(@PathVariable("id") Long videoId, @RequestBody VideoMetaDataDTO videoMetaDataDTO) {
+    public ResponseEntity<?> updateVideoMetaData(@PathVariable("id") Long videoId, @RequestBody @Valid VideoMetaDataDTO videoMetaDataDTO) {
         User user = userService.getLoggedInUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         if (videoMetaDataDTO == null) {
             return ResponseEntity.badRequest().body("Video metadata must be provided.");
+        }
+        if (videoId.equals(videoMetaDataDTO.getId())) {
+            return ResponseEntity.badRequest().body("URL Path video id and object video id do not match.");
         }
         log.info("Updating video meta data by user id: {}, video meta data: {}", user.getId(), videoMetaDataDTO);
         try {
