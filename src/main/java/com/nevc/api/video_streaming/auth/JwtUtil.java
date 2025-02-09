@@ -3,6 +3,8 @@ package com.nevc.api.video_streaming.auth;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+@Getter
+@Setter
 @Component
 public class JwtUtil {
 
@@ -25,7 +29,6 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        // Decode the base64-encoded secret key
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         this.key = Keys.hmacShaKeyFor(decodedKey);
     }
@@ -40,7 +43,7 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser().setSigningKey(secret.getBytes()).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
     }
 
     public void invalidateToken(String token) {
@@ -52,7 +55,7 @@ public class JwtUtil {
     }
 
     public boolean isTokenExpired(String token) {
-        return Jwts.parser().setSigningKey(secret.getBytes()).build().parseClaimsJws(token)
+        return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token)
                 .getBody().getExpiration().before(new Date());
     }
 

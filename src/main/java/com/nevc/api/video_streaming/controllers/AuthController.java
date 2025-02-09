@@ -8,9 +8,13 @@ import com.nevc.api.video_streaming.enums.Role;
 import com.nevc.api.video_streaming.services.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +43,8 @@ import java.util.Optional;
                 RequestMethod.DELETE,
                 RequestMethod.POST
         })
+@Getter
+@Setter
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -50,11 +56,15 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${registration.default.role:ADMIN}")
+    private Role defaultRole;
+
     @PostMapping("/login")
     @Operation(summary = "Login a video streaming user")
     @ApiResponse(responseCode = "200", description = "If user is found and token is generated.")
     @ApiResponse(responseCode = "400", description = "In case of a bad login request.")
     @ApiResponse(responseCode = "404", description = "In case the user by email is not found.")
+    @SecurityRequirements // This disables the Bearer token security for this endpoint
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest authRequest) {
         log.debug("Authenticating user with email: {}", authRequest.getEmail());
         try {
@@ -81,27 +91,32 @@ public class AuthController {
     @Operation(summary = "Register a video streaming user")
     @ApiResponse(responseCode = "200", description = "If user is correctly registered.")
     @ApiResponse(responseCode = "400", description = "In case of a bad request or user already exists.")
+    @SecurityRequirements // This disables the Bearer token security for this endpoint
     public ResponseEntity<?> register(@RequestBody @Valid AuthRequest authRequest) {
         log.debug("Registering user with email: {}", authRequest.getEmail());
         if (userDetailsService.findByEmail(authRequest.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email is already in use");
         }
 
-        User newUser = new User();
-        newUser.setEmail(authRequest.getEmail());
-        newUser.setPassword(passwordEncoder.encode(authRequest.getPassword()));
-        newUser.setRole(Role.ADMIN);
+        User newUser = User.builder()
+            .name(authRequest.getName())
+            .email(authRequest.getEmail())
+            .password(passwordEncoder.encode(authRequest.getPassword()))
+            .role(defaultRole)
+            .build();
+
         newUser = userDetailsService.saveUser(newUser);
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User.withUsername(newUser.getEmail())
+        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                .withUsername(newUser.getEmail())
                 .password(newUser.getPassword())
                 .authorities(String.valueOf(newUser.getRole()))
                 .build();
+
         String token = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(token));
     }
-
 
     @PostMapping("/logout")
     @Operation(summary = "Logging out a video streaming user by auth token")

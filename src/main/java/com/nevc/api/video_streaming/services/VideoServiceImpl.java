@@ -47,7 +47,7 @@ public class VideoServiceImpl implements VideoService {
     private final VideoViewRepository videoViewRepository;
     private final Environment env;
 
-    @Value("${video.filepath}")
+    @Value("${video.publishPath}")
     private String publishPath;
 
     @Override

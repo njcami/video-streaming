@@ -33,11 +33,15 @@ curl -X POST "http://localhost:8080/auth/logout" \
          }'
 ```
 
-Once registered (user is given ADMIN role for simplicity to try all endpoints) and logged in, the users can:
+Once registered (default user role is ADMIN for simplicity to try all endpoints) and logged in, the users can:
 
 - **Users with Role VIEWER**: Can perform GET operations on videos endpoints.
-- **Users with Role CREATOR**: Can also perform POST and PUT operations on videos endpoints.
-- **Users with Role ADMIN**: Can also perform DELETE operations on the videos endpoint.
+- **Users with Role CREATOR**: Like VIEWER but can also perform POST and PUT operations on videos endpoints.
+- **Users with Role ADMIN**: Like CREATOR but can also perform DELETE operations on the videos endpoint.
+
+After registration and login put the JWT token text field which appears when the upper 
+left Authorize labelled button is pressed. The following endpoints all require the bearer
+token to be in place.
 
 ## VideoController Endpoints
 

@@ -49,7 +49,7 @@ class AuthControllerTest {
 
     @Test
     void loginWithValidCredentials() {
-        AuthRequest authRequest = new AuthRequest("user@example.com", "password");
+        AuthRequest authRequest = new AuthRequest("user", "user@example.com", "password");
         User user = new User();
         user.setEmail("user@example.com");
         user.setPassword("encodedPassword");
@@ -68,7 +68,7 @@ class AuthControllerTest {
 
     @Test
     void loginWithInvalidCredentials() {
-        AuthRequest authRequest = new AuthRequest("user@example.com", "wrongPassword");
+        AuthRequest authRequest = new AuthRequest("user", "user@example.com", "wrongPassword");
 
         doThrow(new RuntimeException("Bad credentials")).when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
@@ -79,7 +79,7 @@ class AuthControllerTest {
 
     @Test
     void registerWithValidDetails() {
-        AuthRequest authRequest = new AuthRequest("newuser@example.com", "password");
+        AuthRequest authRequest = new AuthRequest("name","newuser@example.com", "password");
         User newUser = new User();
         newUser.setEmail("newuser@example.com");
         newUser.setPassword("encodedPassword");
@@ -99,7 +99,7 @@ class AuthControllerTest {
 
     @Test
     void registerWithExistingEmail() {
-        AuthRequest authRequest = new AuthRequest("existinguser@example.com", "password");
+        AuthRequest authRequest = new AuthRequest("name","existinguser@example.com", "password");
 
         when(userDetailsService.findByEmail("existinguser@example.com")).thenReturn(Optional.of(new User()));
 

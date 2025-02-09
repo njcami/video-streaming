@@ -10,7 +10,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +25,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -37,16 +41,20 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @NotBlank(message = "Name is mandatory")
+    @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Email should be valid")
     @Column(unique = true, nullable = false)
     private String email;
 
+    @NotBlank(message = "Password is mandatory")
     @Column(nullable = false)
     private String password;
 
-    @Schema(description = "Role of the user", example = "ADMIN, CREATOR, VIEWER")
+    @Schema(description = "Role of the user", example = "ADMIN")
     @Enumerated(EnumType.STRING)
     private Role role;
 }
