@@ -14,6 +14,8 @@ import com.nevc.api.video_streaming.projections.VideoMetaDataProjection;
 import com.nevc.api.video_streaming.services.UserService;
 import com.nevc.api.video_streaming.services.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -137,7 +139,9 @@ public class VideoController {
 
     @GetMapping("/play/{id}")
     @Operation(summary = "Play video resource by id.")
-    @ApiResponse(responseCode = "200", description = "Video file is found and can be played.")
+    @ApiResponse(responseCode = "200", description = "Video file is found and can be played.",
+            content = @Content(mediaType = "application/octet-stream",
+                    schema = @Schema(type = "string", format = "binary")))
     @ApiResponse(responseCode = "400", description = "Invalid request.")
     @ApiResponse(responseCode = "401", description = "User is not authenticated.")
     @ApiResponse(responseCode = "404", description = "Video file or metadata not found.")

@@ -30,7 +30,7 @@ The following assumptions that were made:
 - The video files are stored in the same directory as the application.
 - When a video file and the metadata are uploaded (one API call to reduce orphan files/metadata), the video file is stored in the local file system and the metadata is stored in the MySQL database.
 - A user can be registered, logged in and out from the OpenAPI documentation (No other user interface is required, but can be used).
-- A video file can be published, updated, played, and deleted from the OpenAPI documentation.
+- A video file can be published, metadata updated and deleted from the OpenAPI documentation. The video file cannot be played from the OpenAPI documentation, however, it can be outputted as a string from the command line when the below curl command is used.
 - Video searches can also be done from the OpenAPI documentation.
 - Maximum video file size is set to 1024MB.
 - Videos are not deleted from the local file system when metadata is soft-deleted from the database (made active=false).
@@ -108,12 +108,13 @@ curl -X PUT "http://localhost:8080/videos/1" \
 ```sh
 curl -X GET "http://localhost:8080/videos/play/1" \
      -H "Authorization: Bearer your-jwt-token-here"
+     --output -
 ```
 
 ### Get Video Metadata
 ```sh
-curl -X GET "http://localhost:8080/videos/1" \
-     -H "Authorization: Bearer your-jwt-token-here"
+curl -X GET "http://localhost:8080/videos/play/1" \
+     -H "Authorization: Bearer your-jwt-token-here" \
 ```
 
 ### Delete Video
