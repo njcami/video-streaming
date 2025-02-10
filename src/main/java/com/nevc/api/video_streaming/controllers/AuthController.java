@@ -126,6 +126,12 @@ public class AuthController {
     @ApiResponse(responseCode = "400", description = "In case of a bad request.")
     public ResponseEntity<?> logout(@RequestBody @Valid AuthResponse authResponse) {
         log.debug("Invalidating token: {}", authResponse.getToken());
+
+        // Validate the token before invalidating it
+        if (!jwtUtil.validateToken(authResponse.getToken())) {
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
+
         jwtUtil.invalidateToken(authResponse.getToken());
         return ResponseEntity.ok("User logged out successfully");
     }

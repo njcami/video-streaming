@@ -45,7 +45,7 @@ public class VideoServiceImpl implements VideoService {
     private final VideoImpressionRepository videoImpressionRepository;
     private final VideoViewRepository videoViewRepository;
 
-    @Value("${video.publishPath}")
+    @Value("${video.publishPath:uploads/}")
     private String publishPath;
 
     @Override
@@ -145,7 +145,7 @@ public class VideoServiceImpl implements VideoService {
             videoViewRepository.save(videoView);
         }
         log.info("Loading video file by user id: {}, video id: {}", user.getId(), videoId);
-        Path path = Paths.get(videoMetaData.getFilePath() + videoMetaData.getFileName());
+        Path path = Paths.get(videoMetaData.getFilePath());
         try {
             return new UrlResource(path.toUri());
         } catch (MalformedURLException e) {

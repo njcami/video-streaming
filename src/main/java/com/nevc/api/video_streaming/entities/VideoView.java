@@ -1,5 +1,6 @@
 package com.nevc.api.video_streaming.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -41,13 +42,14 @@ public class VideoView implements Serializable {
     private Long id;
 
     @NotNull
+    @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "video_meta_data_id", referencedColumnName = "id")
+    @JoinColumn(name = "video_meta_data_id", referencedColumnName = "id", nullable = false)
     private VideoMetaData videoMetaData;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
     @Schema(description = "Impression date", example = "2024-12-31")

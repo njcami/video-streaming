@@ -1,5 +1,6 @@
 package com.nevc.api.video_streaming.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nevc.api.video_streaming.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
@@ -51,6 +52,7 @@ public class User implements Serializable {
     private String email;
 
     @NotBlank(message = "Password is mandatory")
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 

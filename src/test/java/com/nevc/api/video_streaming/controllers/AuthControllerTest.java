@@ -113,11 +113,24 @@ class AuthControllerTest {
     void logoutWithValidToken() {
         AuthResponse authResponse = new AuthResponse("validToken");
 
+        when(jwtUtil.validateToken("validToken")).thenReturn(true);
         doNothing().when(jwtUtil).invalidateToken("validToken");
 
         ResponseEntity<?> response = authController.logout(authResponse);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("User logged out successfully", response.getBody());
+    }
+
+    @Test
+    void logoutWithInvalidToken() {
+        AuthResponse authResponse = new AuthResponse("invalidToken");
+
+        when(jwtUtil.validateToken("invalidToken")).thenReturn(false);
+
+        ResponseEntity<?> response = authController.logout(authResponse);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Invalid token", response.getBody());
     }
 }

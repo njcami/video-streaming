@@ -116,7 +116,7 @@ public class VideoController {
         if (videoMetaDataDTO == null) {
             return ResponseEntity.badRequest().body("Video metadata must be provided.");
         }
-        if (videoId.equals(videoMetaDataDTO.getId())) {
+        if (!videoId.equals(videoMetaDataDTO.getId())) {
             return ResponseEntity.badRequest().body("URL Path video id and object video id do not match.");
         }
         log.info("Updating video meta data by user id: {}, video meta data: {}", user.getId(), videoMetaDataDTO);

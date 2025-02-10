@@ -1,6 +1,37 @@
 # Video Streaming API
 
-This repository contains a simple video streaming API that allows users to upload videos and stream them. The API is built using Java 21 LTS and Spring Boot 3.4.2. It uses JWT for authentication. It requires a Docker environment (server version 1.6.0 or higher) since it uses TestContainers to run for both the default and test profiles. No other database is required on the host system.
+This repository contains a simple video streaming API that allows users to upload videos and play them. 
+
+This service is built using Java 21 LTS and Spring Boot 3.4.2. It uses JWT for authentication. It requires a Docker environment 
+(server version 1.6.0 or higher) since it uses TestContainers with MySQL database to run for both the default and test profiles. 
+No other database is required on the host system.
+
+To build the project, make sure to have Java 21 LTS installed and run the following command:
+
+mvn clean install
+
+To run the project, execute the following command:
+
+mvn spring-boot:run
+
+The application will be available at [http://localhost:8080](http://localhost:8080).
+
+Assumptions that were made:
+- The video files are stored in the local file system.
+- The video files are stored in the same directory as the application.
+- When a video file and the metadata are uploaded (one API call to reduce orphan files/metadata), the video file is stored in the local file system and the metadata is stored in the MySQL database.
+- A user can be registered, logged in and out from the OpenAPI documentation (No other user interface is required, but can be used).
+- A video file can be published, updated, played, and deleted from the OpenAPI documentation.
+- Video searches can also be done from the OpenAPI documentation.
+- Maximum video file size is set to 1024MB.
+- Videos are not deleted from the local file system when metadata is soft-deleted from the database (made active=false).
+- No Spring profile is used when running the application. The default profile is used.
+- During test, the Spring profile is automatically set to test. Both unit and also integration tests are run.
+- During build, the test phase is invoked in the Maven Lifecycle therefore all tests are run.
+
+To use a different database, change the application.properties file in the resources folder. The default database is MySQL.
+
+```sh
 
 When run locally, the API documentation can be accessed at [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) and has the following user endpoints:
 

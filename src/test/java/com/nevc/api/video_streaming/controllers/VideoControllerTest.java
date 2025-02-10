@@ -187,7 +187,20 @@ class VideoControllerTest {
     void testUpdateVideoMetaData_Success() {
         User user = new User();
         user.setId(1L);
-        VideoMetaDataDTO videoMetaDataDTO = new VideoMetaDataDTO();
+        VideoMetaDataDTO videoMetaDataDTO = VideoMetaDataDTO.builder()
+                .id(1L)
+                .title("Updated Title")
+                .directorName("Updated Director")
+                .mainActor("Updated Main Actor")
+                .runningTime(140)
+                .genre(Set.of(Genre.ACTION, Genre.THRILLER))
+                .fileName("test.mp4")
+                .fileExtension("mp4")
+                .yearOfRelease(2021)
+                .synopsis("Updated Synopsis")
+                .cast(Set.of(new Actor(null, "Christian Bale", null),
+                        new Actor(null, "Heath Ledger", null)))
+                .build();
         when(userService.getLoggedInUser()).thenReturn(user);
         when(videoService.saveVideoMetaData(user, videoMetaDataDTO)).thenReturn(videoMetaDataDTO);
 
