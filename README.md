@@ -6,17 +6,27 @@ This service is built using Java 21 LTS and Spring Boot 3.4.2. It uses JWT for a
 (server version 1.6.0 or higher) since it uses TestContainers with MySQL database to run for both the default and test profiles. 
 No other database is required on the host system.
 
+## Building and Running the Project
+
 To build the project, make sure to have Java 21 LTS installed and run the following command:
 
+```sh
 mvn clean install
+```
 
 To run the project, execute the following command:
 
+```sh
 mvn spring-boot:run
+```
 
-The application will be available at [http://localhost:8080](http://localhost:8080).
+By default the application will be available at [http://localhost:8080](http://localhost:8080).
 
-Assumptions that were made:
+```sh
+
+## Practical Assumptions
+
+The following assumptions that were made:
 - The video files are stored in the local file system.
 - The video files are stored in the same directory as the application.
 - When a video file and the metadata are uploaded (one API call to reduce orphan files/metadata), the video file is stored in the local file system and the metadata is stored in the MySQL database.
