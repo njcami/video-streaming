@@ -40,7 +40,7 @@ The following assumptions that were made:
 
 To use a different database, change the application.properties file in the resources folder. The default database is MySQL.
 
-```sh
+## API Documentation
 
 When run locally, the API documentation can be accessed at [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) and has the following user endpoints:
 
